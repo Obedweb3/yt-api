@@ -1,5 +1,3 @@
 {
-  "rewrites": [
-    { "source": "/health", "destination": "/api/health" }
-  ]
+  "version": 2
 }

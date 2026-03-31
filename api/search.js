@@ -1,33 +1,12 @@
 const axios = require("axios");
-
-const HOST = "youtube138.p.rapidapi.com";
-
-function cors(res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-}
-
-function headers() {
-  return {
-    "x-rapidapi-key": process.env.RAPIDAPI_KEY,
-    "x-rapidapi-host": HOST,
-    "Content-Type": "application/json",
-  };
-}
+const { cors, headers, HOST } = require("../lib");
 
 module.exports = async (req, res) => {
   cors(res);
   if (req.method === "OPTIONS") return res.status(200).end();
 
   const { q, type = "video", limit = "10" } = req.query;
-
-  if (!q) {
-    return res.status(400).json({
-      error: "Missing 'q' param",
-      example: "/api/search?q=Blinding+Lights&limit=5",
-    });
-  }
+  if (!q) return res.status(400).json({ error: "Missing ?q=  Example: /api/search?q=Blinding+Lights" });
 
   const maxResults = Math.min(Math.max(parseInt(limit) || 10, 1), 20);
 
@@ -42,29 +21,17 @@ module.exports = async (req, res) => {
 
     for (const item of raw) {
       if (results.length >= maxResults) break;
-
       const video = item?.video || item?.videoRenderer || item?.compactVideoRenderer;
       if (!video) continue;
-
       const videoId = video.videoId || video.id;
       if (!videoId) continue;
-
-      const title =
-        video.title?.runs?.[0]?.text ||
-        video.title?.simpleText ||
-        (typeof video.title === "string" ? video.title : "Unknown");
-
-      const channel =
-        video.author?.title ||
-        video.shortBylineText?.runs?.[0]?.text ||
-        video.ownerText?.runs?.[0]?.text ||
-        "Unknown";
-
+      const title = video.title?.runs?.[0]?.text || video.title?.simpleText || (typeof video.title === "string" ? video.title : "Unknown");
+      const channel = video.author?.title || video.shortBylineText?.runs?.[0]?.text || "Unknown";
       results.push({
         videoId,
         title,
         channel,
-        duration:      video.lengthText?.simpleText || video.length?.simpleText || null,
+        duration:      video.lengthText?.simpleText || null,
         views:         video.shortViewCountText?.simpleText || null,
         publishedTime: video.publishedTimeText?.simpleText || null,
         thumbnail:     video.thumbnail?.thumbnails?.at(-1)?.url || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
@@ -76,9 +43,6 @@ module.exports = async (req, res) => {
 
     return res.status(200).json({ query: q, count: results.length, results });
   } catch (err) {
-    return res.status(err.response?.status || 500).json({
-      error: "Search failed",
-      details: err.response?.data || err.message,
-    });
+    return res.status(err.response?.status || 500).json({ error: err.message, details: err.response?.data });
   }
 };

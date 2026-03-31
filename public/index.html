@@ -72,7 +72,37 @@
       API is live — all endpoints operational
     </div>
 
-    <h2>Endpoints</h2>
+    <h2>Search</h2>
+
+    <div class="endpoint">
+      <div class="row">
+        <span class="method">GET</span>
+        <span class="path">/api/search</span>
+      </div>
+      <div class="desc">Search YouTube by song/video name — returns list of results with download links</div>
+      <div class="params">
+        <div class="param">?<span>q</span> — search query e.g. "Blinding Lights" (required)</div>
+        <div class="param">?<span>type</span> — video · channel · playlist (default: video)</div>
+        <div class="param">?<span>limit</span> — number of results 1–20 (default: 10)</div>
+      </div>
+      <div class="example">/api/search?q=Blinding+Lights+Weeknd&limit=5</div>
+    </div>
+
+    <div class="endpoint">
+      <div class="row">
+        <span class="method">GET</span>
+        <span class="path">/api/search/download</span>
+        <span class="badge">⚡ one-shot</span>
+      </div>
+      <div class="desc">Search by name → auto-picks top result → returns MP4 + MP3 download URLs instantly</div>
+      <div class="params">
+        <div class="param">?<span>q</span> — song or video name (required)</div>
+        <div class="param">?<span>quality</span> — best · 1080 · 720 · 480 · 360 (default: best)</div>
+      </div>
+      <div class="example">/api/search/download?q=Shape+of+You&quality=720</div>
+    </div>
+
+    <h2>Video</h2>
 
     <div class="endpoint">
       <div class="row">

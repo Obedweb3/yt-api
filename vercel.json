@@ -1,17 +1,5 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    { "src": "/api/info",              "dest": "/api/info.js" },
-    { "src": "/api/formats",           "dest": "/api/formats.js" },
-    { "src": "/api/download/mp4",      "dest": "/api/download/mp4.js" },
-    { "src": "/api/download/mp3",      "dest": "/api/download/mp3.js" },
-    { "src": "/api/download/stream",   "dest": "/api/download/stream.js" },
-    { "src": "/health",                "dest": "/api/health.js" }
+  "rewrites": [
+    { "source": "/health", "destination": "/api/health" }
   ]
 }

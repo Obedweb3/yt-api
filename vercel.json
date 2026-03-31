@@ -1,3 +1,19 @@
 {
-  "version": 2
+  "version": 2,
+  "functions": {
+    "api/**/*.js": {
+      "maxDuration": 30
+    }
+  },
+  "routes": [
+    { "src": "/api/health",          "dest": "/api/health.js" },
+    { "src": "/api/info",            "dest": "/api/info.js" },
+    { "src": "/api/search",          "dest": "/api/search.js" },
+    { "src": "/api/search-download", "dest": "/api/search-download.js" },
+    { "src": "/api/formats",         "dest": "/api/formats.js" },
+    { "src": "/api/download-mp3",    "dest": "/api/download-mp3.js" },
+    { "src": "/api/download-mp4",    "dest": "/api/download-mp4.js" },
+    { "src": "/api/stream",          "dest": "/api/stream.js" },
+    { "src": "/(.*)",                "dest": "/public/$1" }
+  ]
 }

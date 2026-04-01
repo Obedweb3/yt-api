@@ -1,33 +1,98 @@
 const { cors, extractId } = require("../lib");
 const axios = require("axios");
 
-// TV Embedded client — does not require an API key and returns direct URLs reliably
-async function getPlayerTV(videoId) {
-  const { data } = await axios.post(
-    "https://www.youtube.com/youtubei/v1/player",
-    {
+// Try multiple Innertube clients in order until one returns stream URLs
+const CLIENTS = [
+  {
+    name: "IOS",
+    body: {
       context: {
         client: {
-          clientName: "TVHTML5_SIMPLY_EMBEDDED_PLAYER",
-          clientVersion: "2.0",
+          clientName: "IOS",
+          clientVersion: "19.09.3",
+          deviceModel: "iPhone16,2",
+          userAgent: "com.google.ios.youtube/19.09.3 (iPhone16,2; U; CPU iOS 17_5 like Mac OS X)",
           hl: "en",
           gl: "US",
         },
-        thirdParty: {
-          embedUrl: "https://www.youtube.com/",
+      },
+    },
+    headers: {
+      "Content-Type": "application/json",
+      "User-Agent": "com.google.ios.youtube/19.09.3 (iPhone16,2; U; CPU iOS 17_5 like Mac OS X)",
+      "X-YouTube-Client-Name": "5",
+      "X-YouTube-Client-Version": "19.09.3",
+    },
+  },
+  {
+    name: "ANDROID",
+    body: {
+      context: {
+        client: {
+          clientName: "ANDROID",
+          clientVersion: "19.09.37",
+          androidSdkVersion: 30,
+          hl: "en",
+          gl: "US",
         },
       },
-      videoId,
     },
-    {
-      headers: {
-        "Content-Type": "application/json",
-        "Origin": "https://www.youtube.com",
-        "Referer": "https://www.youtube.com/",
+    headers: {
+      "Content-Type": "application/json",
+      "User-Agent": "com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip",
+      "X-YouTube-Client-Name": "3",
+      "X-YouTube-Client-Version": "19.09.37",
+    },
+  },
+  {
+    name: "WEB_EMBEDDED",
+    body: {
+      context: {
+        client: {
+          clientName: "WEB_EMBEDDED_PLAYER",
+          clientVersion: "2.20231219.01.00",
+          hl: "en",
+          gl: "US",
+        },
+        thirdParty: { embedUrl: "https://www.youtube.com/" },
       },
+    },
+    headers: {
+      "Content-Type": "application/json",
+      "Origin": "https://www.youtube.com",
+      "Referer": "https://www.youtube.com/",
+    },
+  },
+];
+
+async function getPlayer(videoId) {
+  const url = "https://www.youtube.com/youtubei/v1/player";
+  let lastError = null;
+
+  for (const client of CLIENTS) {
+    try {
+      const { data } = await axios.post(
+        url,
+        { ...client.body, videoId },
+        { headers: client.headers, timeout: 8000 }
+      );
+
+      const formats = [
+        ...(data.streamingData?.formats || []),
+        ...(data.streamingData?.adaptiveFormats || []),
+      ].filter(f => f.url);
+
+      if (formats.length > 0) {
+        console.log(`Client ${client.name} succeeded with ${formats.length} formats`);
+        return { data, formats, client: client.name };
+      }
+    } catch (err) {
+      lastError = err;
+      continue;
     }
-  );
-  return data;
+  }
+
+  throw new Error(`All clients failed. Last error: ${lastError?.message}`);
 }
 
 module.exports = async (req, res) => {
@@ -41,31 +106,10 @@ module.exports = async (req, res) => {
   if (!videoId) return res.status(400).json({ error: "Invalid YouTube URL or video ID" });
 
   try {
-    const data = await getPlayerTV(videoId);
-
-    const status = data.playabilityStatus?.status;
-    if (status === "ERROR" || status === "UNPLAYABLE") {
-      return res.status(404).json({
-        error: data.playabilityStatus?.reason || "Video not available",
-        status,
-      });
-    }
-
-    const sd = data.streamingData || {};
-    const all = [
-      ...(sd.formats || []),
-      ...(sd.adaptiveFormats || []),
-    ].filter(f => f.url);
-
-    if (!all.length) {
-      return res.status(404).json({
-        error: "No direct stream URLs found. Video may be age-restricted or region-blocked.",
-        playabilityStatus: status,
-      });
-    }
+    const { data, formats, client } = await getPlayer(videoId);
 
     if (type === "mp3") {
-      const audios = all
+      const audios = formats
         .filter(f => f.mimeType?.startsWith("audio"))
         .sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0));
       if (!audios.length) return res.status(404).json({ error: "No audio formats found" });
@@ -74,6 +118,7 @@ module.exports = async (req, res) => {
         videoId,
         title: data.videoDetails?.title,
         type: "audio",
+        clientUsed: client,
         mime: best.mimeType,
         bitrate: best.bitrate,
         url: best.url,
@@ -83,7 +128,7 @@ module.exports = async (req, res) => {
     }
 
     // MP4
-    const mp4s = all
+    const mp4s = formats
       .filter(f => f.mimeType?.includes("video/mp4"))
       .sort((a, b) => (b.height || 0) - (a.height || 0));
     if (!mp4s.length) return res.status(404).json({ error: "No MP4 formats found" });
@@ -96,6 +141,7 @@ module.exports = async (req, res) => {
       videoId,
       title: data.videoDetails?.title,
       type: "video",
+      clientUsed: client,
       quality: chosen.qualityLabel || `${chosen.height}p`,
       mime: chosen.mimeType,
       width: chosen.width,

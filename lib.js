@@ -1,6 +1,7 @@
 const axios = require("axios");
 
-const HOST = "youtube138.p.rapidapi.com";
+const HOST = "youtube-media-downloader.p.rapidapi.com";
+const BASE = `https://${HOST}/v2`;
 
 function cors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -14,7 +15,6 @@ function headers() {
   return {
     "x-rapidapi-key": key,
     "x-rapidapi-host": HOST,
-    "Content-Type": "application/json",
   };
 }
 
@@ -30,12 +30,12 @@ function extractId(input) {
   return null;
 }
 
-async function fetchInfo(videoId) {
-  const { data } = await axios.get(`https://${HOST}/video/info/`, {
-    params: { id: videoId, hl: "en", gl: "US" },
+async function get(path, params = {}) {
+  const { data } = await axios.get(`${BASE}${path}`, {
+    params,
     headers: headers(),
   });
   return data;
 }
 
-module.exports = { cors, headers, extractId, fetchInfo, HOST };
+module.exports = { cors, headers, extractId, get, HOST, BASE };

@@ -6,14 +6,14 @@
     }
   },
   "routes": [
-    { "src": "/api/health",          "dest": "/api/health.js" },
-    { "src": "/api/info",            "dest": "/api/info.js" },
-    { "src": "/api/search",          "dest": "/api/search.js" },
-    { "src": "/api/search-download", "dest": "/api/search-download.js" },
-    { "src": "/api/formats",         "dest": "/api/formats.js" },
-    { "src": "/api/download-mp3",    "dest": "/api/download-mp3.js" },
-    { "src": "/api/download-mp4",    "dest": "/api/download-mp4.js" },
-    { "src": "/api/stream",          "dest": "/api/stream.js" },
-    { "src": "/(.*)",                "dest": "/public/$1" }
+    { "src": "/api/health",    "dest": "/api/health.js" },
+    { "src": "/api/info",      "dest": "/api/info.js" },
+    { "src": "/api/download",  "dest": "/api/download.js" },
+    { "src": "/api/related",   "dest": "/api/related.js" },
+    { "src": "/api/comments",  "dest": "/api/comments.js" },
+    { "src": "/api/search",    "dest": "/api/search.js" },
+    { "src": "/api/playlist",  "dest": "/api/playlist.js" },
+    { "src": "/api/channel",   "dest": "/api/channel.js" },
+    { "src": "/(.*)",          "dest": "/public/$1" }
   ]
 }

@@ -1,20 +1,13 @@
 const axios = require("axios");
 
-const HOST = "youtube-media-downloader.p.rapidapi.com";
-const BASE = `https://${HOST}/v2`;
-
+// ─── CORS ───────────────────────────────────────────────────────────────────
 function cors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 }
 
-function headers() {
-  const key = process.env.RAPIDAPI_KEY;
-  if (!key) throw new Error("RAPIDAPI_KEY environment variable is not set.");
-  return { "x-rapidapi-key": key, "x-rapidapi-host": HOST };
-}
-
+// ─── YouTube video ID extractor ──────────────────────────────────────────────
 function extractId(input) {
   if (!input) return null;
   const patterns = [
@@ -28,9 +21,42 @@ function extractId(input) {
   return null;
 }
 
-async function get(path, params = {}) {
-  const { data } = await axios.get(`${BASE}${path}`, { params, headers: headers() });
+// ─── YouTube Data API v3 (Google) — metadata, search, channel, playlist ─────
+function ytKey() {
+  const key = process.env.YOUTUBE_API_KEY;
+  if (!key) throw new Error("YOUTUBE_API_KEY env variable not set. Add it in Vercel → Settings → Environment Variables.");
+  return key;
+}
+
+async function ytGet(path, params = {}) {
+  const { data } = await axios.get(`https://www.googleapis.com/youtube/v3/${path}`, {
+    params: { ...params, key: ytKey() },
+  });
   return data;
 }
 
-module.exports = { cors, extractId, get };
+// ─── Innertube (YouTube internal, no key) — download URLs ───────────────────
+const INNERTUBE_CLIENT = { clientName: "WEB", clientVersion: "2.20240101.00.00", hl: "en", gl: "US" };
+
+async function getPlayer(videoId) {
+  const { data } = await axios.post(
+    "https://www.youtube.com/youtubei/v1/player",
+    {
+      context: { client: INNERTUBE_CLIENT },
+      videoId,
+      playbackContext: { contentPlaybackContext: { signatureTimestamp: 19950 } },
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        "X-YouTube-Client-Name": "1",
+        "X-YouTube-Client-Version": INNERTUBE_CLIENT.clientVersion,
+        "Origin": "https://www.youtube.com",
+        "Referer": "https://www.youtube.com/",
+      },
+    }
+  );
+  return data;
+}
+
+module.exports = { cors, extractId, ytGet, getPlayer };

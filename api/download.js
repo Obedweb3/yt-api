@@ -16,6 +16,7 @@ const CLIENTS = [
           gl: "US",
         },
       },
+      playbackContext: { contentPlaybackContext: { signatureTimestamp: 19950 } },
     },
     headers: {
       "Content-Type": "application/json",
@@ -36,6 +37,7 @@ const CLIENTS = [
           gl: "US",
         },
       },
+      playbackContext: { contentPlaybackContext: { signatureTimestamp: 19950 } },
     },
     headers: {
       "Content-Type": "application/json",
@@ -56,6 +58,7 @@ const CLIENTS = [
         },
         thirdParty: { embedUrl: "https://www.youtube.com/" },
       },
+      playbackContext: { contentPlaybackContext: { signatureTimestamp: 19950 } },
     },
     headers: {
       "Content-Type": "application/json",

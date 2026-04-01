@@ -3,110 +3,70 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>YT Downloader API</title>
+  <title>YouTube Media Downloader API</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Courier New', monospace; background: #0d0d0d; color: #e0e0e0; padding: 40px 24px; min-height: 100vh; }
-    .container { max-width: 760px; margin: 0 auto; }
-    h1 { font-size: 1.6rem; color: #ff4444; margin-bottom: 4px; }
-    .subtitle { color: #666; font-size: 0.85rem; margin-bottom: 36px; }
-    h2 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 2px; color: #444; margin: 32px 0 12px; border-bottom: 1px solid #1a1a1a; padding-bottom: 6px; }
-    .endpoint { background: #161616; border: 1px solid #222; border-radius: 6px; padding: 16px 20px; margin-bottom: 10px; }
-    .row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px; flex-wrap: wrap; }
-    .method { font-size: 0.7rem; font-weight: bold; color: #1db954; background: #0a2e16; padding: 2px 8px; border-radius: 3px; flex-shrink: 0; }
-    .path { color: #fff; font-size: 0.92rem; }
-    .desc { color: #666; font-size: 0.82rem; margin-bottom: 6px; }
-    .param { font-size: 0.8rem; color: #888; margin: 2px 0; }
-    .param span { color: #e8b84b; }
-    .example { background: #0d0d0d; border-left: 2px solid #2a2a2a; padding: 8px 14px; margin-top: 10px; font-size: 0.78rem; color: #666; overflow-x: auto; white-space: nowrap; }
-    .badge { font-size: 0.66rem; background: #1a1200; border: 1px solid #3a2a00; color: #e8b84b; padding: 1px 7px; border-radius: 3px; margin-left: 6px; }
-    .status { display: flex; align-items: center; gap: 8px; background: #0a1a0a; border: 1px solid #1a3a1a; border-radius: 4px; padding: 10px 16px; margin-bottom: 28px; font-size: 0.82rem; color: #1db954; }
-    .dot { width: 7px; height: 7px; background: #1db954; border-radius: 50%; animation: pulse 2s infinite; flex-shrink: 0; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+    body { font-family: monospace; background: #0d0d0d; color: #e0e0e0; max-width: 860px; margin: 40px auto; padding: 0 20px; }
+    h1 { color: #ff4444; }
+    h2 { color: #aaa; border-bottom: 1px solid #333; padding-bottom: 6px; }
+    .endpoint { background: #1a1a1a; border-left: 3px solid #ff4444; padding: 12px 16px; margin: 12px 0; border-radius: 4px; }
+    .method { color: #4caf50; font-weight: bold; margin-right: 8px; }
+    .path { color: #64b5f6; }
+    .param { color: #ffb74d; }
+    .desc { color: #999; font-size: 0.9em; margin-top: 6px; }
+    code { background: #222; padding: 2px 6px; border-radius: 3px; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>🎬 YT Downloader API</h1>
-    <p class="subtitle">YouTube138 · RapidAPI · Vercel Serverless</p>
-    <div class="status"><div class="dot"></div>API is live</div>
+  <h1>🎬 YouTube Media Downloader API</h1>
+  <p>Powered by <strong>DataFanatic / youtube-media-downloader</strong> via RapidAPI.</p>
 
-    <h2>Search</h2>
+  <h2>Video</h2>
+  <div class="endpoint">
+    <span class="method">GET</span><span class="path">/api/info</span><br/>
+    <span class="param">?url=</span> YouTube URL or video ID<br/>
+    <div class="desc">Get full video details (title, formats, metadata)</div>
+  </div>
+  <div class="endpoint">
+    <span class="method">GET</span><span class="path">/api/download</span><br/>
+    <span class="param">?url=</span> &amp; <span class="param">?type=mp4|mp3</span> &amp; <span class="param">?quality=720</span> (optional)<br/>
+    <div class="desc">Get download URL for MP4 (video) or MP3/M4A (audio). Returns best quality by default.</div>
+  </div>
+  <div class="endpoint">
+    <span class="method">GET</span><span class="path">/api/related</span><br/>
+    <span class="param">?url=</span> &amp; <span class="param">?nextToken=</span> (optional, for pagination)<br/>
+    <div class="desc">List related videos and playlists</div>
+  </div>
+  <div class="endpoint">
+    <span class="method">GET</span><span class="path">/api/comments</span><br/>
+    <span class="param">?url=</span> &amp; <span class="param">?sortBy=top|newest</span> &amp; <span class="param">?nextToken=</span><br/>
+    <div class="desc">List video comments with pagination</div>
+  </div>
 
-    <div class="endpoint">
-      <div class="row"><span class="method">GET</span><span class="path">/api/search</span></div>
-      <div class="desc">Search YouTube by song or video name — returns a list of results</div>
-      <div class="param">?<span>q</span> — search query (required)</div>
-      <div class="param">?<span>type</span> — video · channel · playlist &nbsp;(default: video)</div>
-      <div class="param">?<span>limit</span> — results count 1–20 &nbsp;(default: 10)</div>
-      <div class="example">/api/search?q=Blinding+Lights&limit=5</div>
-    </div>
+  <h2>Search</h2>
+  <div class="endpoint">
+    <span class="method">GET</span><span class="path">/api/search</span><br/>
+    <span class="param">?q=</span> keyword &amp; <span class="param">?type=video|channel|playlist</span> &amp; <span class="param">?sortBy=relevance|date|views|rating</span> &amp; <span class="param">?duration=short|long</span><br/>
+    <div class="desc">Search YouTube with filters and pagination</div>
+  </div>
 
-    <div class="endpoint">
-      <div class="row"><span class="method">GET</span><span class="path">/api/search-download</span><span class="badge">⚡ one-shot</span></div>
-      <div class="desc">Search by name → picks top result → returns MP4 + MP3 download URLs in one call</div>
-      <div class="param">?<span>q</span> — song or video name (required)</div>
-      <div class="param">?<span>quality</span> — best · 1080 · 720 · 480 · 360 &nbsp;(default: best)</div>
-      <div class="example">/api/search-download?q=Shape+of+You&quality=720</div>
-    </div>
+  <h2>Playlist</h2>
+  <div class="endpoint">
+    <span class="method">GET</span><span class="path">/api/playlist</span><br/>
+    <span class="param">?id=</span> Playlist ID &amp; <span class="param">?nextToken=</span><br/>
+    <div class="desc">Get playlist details and videos</div>
+  </div>
 
-    <h2>Video Info</h2>
+  <h2>Channel</h2>
+  <div class="endpoint">
+    <span class="method">GET</span><span class="path">/api/channel</span><br/>
+    <span class="param">?id=</span> Channel ID &amp; <span class="param">?nextToken=</span><br/>
+    <div class="desc">Get channel details and videos</div>
+  </div>
 
-    <div class="endpoint">
-      <div class="row"><span class="method">GET</span><span class="path">/api/info</span></div>
-      <div class="desc">Video metadata — title, thumbnail, duration, channel, views</div>
-      <div class="param">?<span>url</span> — YouTube URL or video ID (required)</div>
-      <div class="example">/api/info?url=https://youtu.be/dQw4w9WgXcQ</div>
-    </div>
-
-    <div class="endpoint">
-      <div class="row"><span class="method">GET</span><span class="path">/api/formats</span></div>
-      <div class="desc">All available formats grouped: combined, videoOnly, audioOnly</div>
-      <div class="param">?<span>url</span> — YouTube URL or video ID (required)</div>
-      <div class="example">/api/formats?url=dQw4w9WgXcQ</div>
-    </div>
-
-    <h2>Download</h2>
-
-    <div class="endpoint">
-      <div class="row"><span class="method">GET</span><span class="path">/api/download-mp4</span></div>
-      <div class="desc">Returns a direct MP4 download URL</div>
-      <div class="param">?<span>url</span> — YouTube URL or video ID (required)</div>
-      <div class="param">?<span>quality</span> — best · 1080 · 720 · 480 · 360 &nbsp;(default: best)</div>
-      <div class="example">/api/download-mp4?url=dQw4w9WgXcQ&quality=720</div>
-    </div>
-
-    <div class="endpoint">
-      <div class="row"><span class="method">GET</span><span class="path">/api/download-mp3</span></div>
-      <div class="desc">Best audio stream URL (M4A — convert to MP3 with ffmpeg)</div>
-      <div class="param">?<span>url</span> — YouTube URL or video ID (required)</div>
-      <div class="example">/api/download-mp3?url=dQw4w9WgXcQ</div>
-    </div>
-
-    <div class="endpoint">
-      <div class="row"><span class="method">GET</span><span class="path">/api/stream</span><span class="badge">302 redirect</span></div>
-      <div class="desc">Redirects to Google CDN stream — triggers browser download directly</div>
-      <div class="param">?<span>url</span> — YouTube URL or video ID (required)</div>
-      <div class="param">?<span>itag</span> — format itag from /api/formats (required)</div>
-      <div class="example">/api/stream?url=dQw4w9WgXcQ&itag=22</div>
-    </div>
-
-    <h2>Health</h2>
-
-    <div class="endpoint">
-      <div class="row"><span class="method">GET</span><span class="path">/api/health</span></div>
-      <div class="desc">Server health check</div>
-      <div class="example">/api/health</div>
-    </div>
-
-    <h2>Common itags</h2>
-    <div class="endpoint">
-      <div class="example">18   → MP4  360p  (video + audio)
-22   → MP4  720p  (video + audio)
-137  → MP4  1080p (video only — no audio)
-140  → M4A  128kbps (audio only)
-251  → WebM 160kbps (audio only)</div>
-    </div>
+  <h2>Health</h2>
+  <div class="endpoint">
+    <span class="method">GET</span><span class="path">/api/health</span><br/>
+    <div class="desc">Check API status</div>
   </div>
 </body>
 </html>

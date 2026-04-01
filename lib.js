@@ -11,14 +11,12 @@ function cors(res) {
 
 function headers() {
   const key = process.env.RAPIDAPI_KEY;
-  if (!key) throw new Error("RAPIDAPI_KEY environment variable is not set. Add it in Vercel → Settings → Environment Variables.");
-  return {
-    "x-rapidapi-key": key,
-    "x-rapidapi-host": HOST,
-  };
+  if (!key) throw new Error("RAPIDAPI_KEY environment variable is not set.");
+  return { "x-rapidapi-key": key, "x-rapidapi-host": HOST };
 }
 
 function extractId(input) {
+  if (!input) return null;
   const patterns = [
     /(?:v=|youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/,
     /^([a-zA-Z0-9_-]{11})$/,
@@ -31,11 +29,8 @@ function extractId(input) {
 }
 
 async function get(path, params = {}) {
-  const { data } = await axios.get(`${BASE}${path}`, {
-    params,
-    headers: headers(),
-  });
+  const { data } = await axios.get(`${BASE}${path}`, { params, headers: headers() });
   return data;
 }
 
-module.exports = { cors, headers, extractId, get, HOST, BASE };
+module.exports = { cors, extractId, get };

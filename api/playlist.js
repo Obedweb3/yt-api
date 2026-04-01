@@ -8,18 +8,22 @@ module.exports = async (req, res) => {
   if (!id) return res.status(400).json({ error: "Missing ?id=  Example: /api/playlist?id=PLxxxxxxx" });
 
   try {
-    // Playlist details
-    const pl = await ytGet("playlists", { part: "snippet,contentDetails", id });
+    // Get playlist details and items in parallel
+    const [pl, items] = await Promise.all([
+      ytGet("playlists", {
+        part: "snippet,contentDetails",
+        id,
+      }),
+      ytGet("playlistItems", {
+        part: "snippet,contentDetails",
+        playlistId: id,
+        maxResults: Number(maxResults),
+        ...(pageToken ? { pageToken } : {}),
+      }),
+    ]);
+
     if (!pl.items?.length) return res.status(404).json({ error: "Playlist not found" });
     const p = pl.items[0];
-
-    // Playlist videos
-    const items = await ytGet("playlistItems", {
-      part: "snippet,contentDetails",
-      playlistId: id,
-      maxResults,
-      pageToken: pageToken || undefined,
-    });
 
     return res.status(200).json({
       playlistId: id,
@@ -28,18 +32,22 @@ module.exports = async (req, res) => {
       channel: p.snippet.channelTitle,
       channelId: p.snippet.channelId,
       videoCount: p.contentDetails.itemCount,
-      thumbnail: p.snippet.thumbnails?.high?.url,
+      thumbnail: p.snippet.thumbnails?.high?.url || p.snippet.thumbnails?.default?.url || null,
       nextPageToken: items.nextPageToken || null,
       prevPageToken: items.prevPageToken || null,
-      videos: items.items.map(i => ({
-        videoId: i.contentDetails.videoId,
-        title: i.snippet.title,
-        position: i.snippet.position,
-        published: i.contentDetails.videoPublishedAt,
-        thumbnail: i.snippet.thumbnails?.high?.url,
+      videos: (items.items || []).map(i => ({
+        videoId: i.contentDetails?.videoId || null,
+        title: i.snippet?.title || "",
+        position: i.snippet?.position ?? null,
+        published: i.contentDetails?.videoPublishedAt || null,
+        thumbnail: i.snippet?.thumbnails?.high?.url || i.snippet?.thumbnails?.default?.url || null,
+        channel: i.snippet?.videoOwnerChannelTitle || "",
       })),
     });
   } catch (err) {
-    return res.status(err.response?.status || 500).json({ error: err.message, details: err.response?.data });
+    return res.status(err.response?.status || 500).json({
+      error: err.message,
+      details: err.response?.data || null,
+    });
   }
 };

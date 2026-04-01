@@ -5,15 +5,15 @@ module.exports = (req, res) => {
     status: "ok",
     timestamp: new Date().toISOString(),
     endpoints: {
-      search: "/api/search?q=",
-      info: "/api/info?url=",
-      download: "/api/download?url=&type=mp4|mp3",
-      channel: "/api/channel?id=",
-      playlist: "/api/playlist?id=",
+      search:   "/api/search?q=lofi+music",
+      info:     "/api/info?url=dQw4w9WgXcQ",
+      download: "/api/download?url=dQw4w9WgXcQ&type=mp4",
+      channel:  "/api/channel?id=UCxxxxxxx",
+      playlist: "/api/playlist?id=PLxxxxxxx",
     },
     powered_by: {
-      metadata: "YouTube Data API v3 (Google)",
-      downloads: "YouTube Innertube (free, no key)",
+      metadata:  "YouTube Data API v3 (Google)",
+      downloads: "YouTube Innertube ANDROID client (free)",
     },
   });
 };

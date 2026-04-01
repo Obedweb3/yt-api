@@ -1,29 +1,29 @@
 const { cors, extractId } = require("../lib");
 const axios = require("axios");
 
-async function getPlayerAndroid(videoId) {
+// TV Embedded client — does not require an API key and returns direct URLs reliably
+async function getPlayerTV(videoId) {
   const { data } = await axios.post(
-    "https://www.youtube.com/youtubei/v1/player?key=AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM394",
+    "https://www.youtube.com/youtubei/v1/player",
     {
       context: {
         client: {
-          clientName: "ANDROID",
-          clientVersion: "19.09.37",
-          androidSdkVersion: 30,
+          clientName: "TVHTML5_SIMPLY_EMBEDDED_PLAYER",
+          clientVersion: "2.0",
           hl: "en",
           gl: "US",
-          utcOffsetMinutes: 0,
+        },
+        thirdParty: {
+          embedUrl: "https://www.youtube.com/",
         },
       },
       videoId,
-      params: "2AMB",
     },
     {
       headers: {
         "Content-Type": "application/json",
-        "User-Agent": "com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip",
-        "X-YouTube-Client-Name": "3",
-        "X-YouTube-Client-Version": "19.09.37",
+        "Origin": "https://www.youtube.com",
+        "Referer": "https://www.youtube.com/",
       },
     }
   );
@@ -41,10 +41,14 @@ module.exports = async (req, res) => {
   if (!videoId) return res.status(400).json({ error: "Invalid YouTube URL or video ID" });
 
   try {
-    const data = await getPlayerAndroid(videoId);
+    const data = await getPlayerTV(videoId);
 
-    if (data.playabilityStatus?.status === "ERROR") {
-      return res.status(404).json({ error: data.playabilityStatus.reason || "Video not available" });
+    const status = data.playabilityStatus?.status;
+    if (status === "ERROR" || status === "UNPLAYABLE") {
+      return res.status(404).json({
+        error: data.playabilityStatus?.reason || "Video not available",
+        status,
+      });
     }
 
     const sd = data.streamingData || {};
@@ -55,8 +59,8 @@ module.exports = async (req, res) => {
 
     if (!all.length) {
       return res.status(404).json({
-        error: "No stream URLs found — video may be age-restricted or unavailable",
-        playabilityStatus: data.playabilityStatus?.status,
+        error: "No direct stream URLs found. Video may be age-restricted or region-blocked.",
+        playabilityStatus: status,
       });
     }
 
@@ -74,11 +78,7 @@ module.exports = async (req, res) => {
         bitrate: best.bitrate,
         url: best.url,
         note: "M4A stream — use ffmpeg to convert to mp3 if needed",
-        allOptions: audios.map(a => ({
-          itag: a.itag,
-          mime: a.mimeType,
-          bitrate: a.bitrate,
-        })),
+        allOptions: audios.map(a => ({ itag: a.itag, mime: a.mimeType, bitrate: a.bitrate })),
       });
     }
 
@@ -86,7 +86,6 @@ module.exports = async (req, res) => {
     const mp4s = all
       .filter(f => f.mimeType?.includes("video/mp4"))
       .sort((a, b) => (b.height || 0) - (a.height || 0));
-
     if (!mp4s.length) return res.status(404).json({ error: "No MP4 formats found" });
 
     const chosen = quality

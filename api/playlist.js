@@ -8,31 +8,28 @@ module.exports = async (req, res) => {
   if (!id) return res.status(400).json({ error: "Missing ?id=  Example: /api/playlist?id=PLxxxxxxx" });
 
   try {
-    // Get playlist details and items in parallel
-    const [pl, items] = await Promise.all([
-      ytGet("playlists", {
-        part: "snippet,contentDetails",
-        id,
-      }),
-      ytGet("playlistItems", {
-        part: "snippet,contentDetails",
-        playlistId: id,
-        maxResults: Number(maxResults),
-        ...(pageToken ? { pageToken } : {}),
-      }),
-    ]);
-
+    // Step 1: playlist details
+    const pl = await ytGet("playlists", { part: "snippet,contentDetails", id });
     if (!pl.items?.length) return res.status(404).json({ error: "Playlist not found" });
     const p = pl.items[0];
 
+    // Step 2: playlist videos
+    const itemsParams = {
+      part: "snippet,contentDetails",
+      playlistId: id,
+      maxResults: Number(maxResults),
+    };
+    if (pageToken) itemsParams.pageToken = pageToken;
+    const items = await ytGet("playlistItems", itemsParams);
+
     return res.status(200).json({
       playlistId: id,
-      title: p.snippet.title,
-      description: p.snippet.description,
-      channel: p.snippet.channelTitle,
-      channelId: p.snippet.channelId,
-      videoCount: p.contentDetails.itemCount,
-      thumbnail: p.snippet.thumbnails?.high?.url || p.snippet.thumbnails?.default?.url || null,
+      title: p.snippet?.title || "",
+      description: p.snippet?.description || "",
+      channel: p.snippet?.channelTitle || "",
+      channelId: p.snippet?.channelId || "",
+      videoCount: p.contentDetails?.itemCount || 0,
+      thumbnail: p.snippet?.thumbnails?.high?.url || p.snippet?.thumbnails?.default?.url || null,
       nextPageToken: items.nextPageToken || null,
       prevPageToken: items.prevPageToken || null,
       videos: (items.items || []).map(i => ({

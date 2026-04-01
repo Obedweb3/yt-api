@@ -3,58 +3,83 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>YouTube Media Downloader API</title>
+  <title>YouTube API</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:monospace;background:#0d0d0d;color:#e0e0e0;max-width:820px;margin:40px auto;padding:0 20px}
-    h1{color:#ff4444;margin-bottom:4px}
-    .sub{color:#666;font-size:.85em;margin-bottom:28px}
-    h2{color:#999;border-bottom:1px solid #222;padding-bottom:6px;margin:24px 0 10px;font-size:.9em;text-transform:uppercase;letter-spacing:1px}
-    .ep{background:#111;border-left:3px solid #ff4444;padding:10px 14px;margin:8px 0;border-radius:4px}
+    body{font-family:monospace;background:#0d0d0d;color:#e0e0e0;max-width:860px;margin:40px auto;padding:0 24px}
+    h1{color:#ff4444;margin-bottom:6px}
+    .badges{margin-bottom:28px;display:flex;gap:8px;flex-wrap:wrap}
+    .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.75em}
+    .b1{background:#1a2a3a;color:#64b5f6;border:1px solid #64b5f6}
+    .b2{background:#1a3a1a;color:#4caf50;border:1px solid #4caf50}
+    h2{color:#aaa;border-bottom:1px solid #222;padding-bottom:5px;margin:22px 0 10px;font-size:.8em;text-transform:uppercase;letter-spacing:1px}
+    .ep{background:#111;border-left:3px solid #ff4444;padding:11px 15px;margin:8px 0;border-radius:4px}
     .method{color:#4caf50;font-weight:bold;margin-right:8px}
-    .path{color:#64b5f6}
-    .params{color:#888;font-size:.82em;margin-top:5px;line-height:1.7}
-    .param{color:#ffb74d}
+    .path{color:#64b5f6;font-weight:bold}
+    .engine{font-size:.72em;color:#555;margin-left:8px}
+    .params{color:#888;font-size:.82em;margin-top:6px;line-height:1.9}
+    .p{color:#ffb74d}
+    .eg{color:#444;font-size:.78em;margin-top:3px}
   </style>
 </head>
 <body>
-  <h1>🎬 YouTube Media Downloader API</h1>
-  <div class="sub">DataFanatic · youtube-media-downloader · v2</div>
-
-  <h2>Video</h2>
-  <div class="ep">
-    <span class="method">GET</span><span class="path">/api/info</span>
-    <div class="params"><span class="param">?url=</span> video ID or YouTube URL &nbsp;|&nbsp; <span class="param">&urlAccess=normal|blocked</span> &nbsp;|&nbsp; <span class="param">&lang=en-US</span></div>
-  </div>
-  <div class="ep">
-    <span class="method">GET</span><span class="path">/api/download</span>
-    <div class="params"><span class="param">?url=</span> video ID or URL &nbsp;|&nbsp; <span class="param">&type=mp4|mp3</span> &nbsp;|&nbsp; <span class="param">&quality=1080|720|480…</span> (optional)</div>
-  </div>
-  <div class="ep">
-    <span class="method">GET</span><span class="path">/api/related</span>
-    <div class="params"><span class="param">?url=</span> video ID or URL &nbsp;|&nbsp; <span class="param">&nextToken=</span> (pagination) &nbsp;|&nbsp; <span class="param">&lang=en-US</span></div>
-  </div>
-  <div class="ep">
-    <span class="method">GET</span><span class="path">/api/comments</span>
-    <div class="params"><span class="param">?url=</span> video ID or URL &nbsp;|&nbsp; <span class="param">&sortBy=top|newest</span> &nbsp;|&nbsp; <span class="param">&nextToken=</span> &nbsp;|&nbsp; <span class="param">&lang=en-US</span></div>
+  <h1>🎬 YouTube API</h1>
+  <div class="badges">
+    <span class="badge b1">📊 Metadata: YouTube Data API v3 (Google)</span>
+    <span class="badge b2">⬇️ Downloads: Innertube (free, no key)</span>
   </div>
 
   <h2>Search</h2>
   <div class="ep">
-    <span class="method">GET</span><span class="path">/api/search</span>
-    <div class="params"><span class="param">?q=</span> keyword &nbsp;|&nbsp; <span class="param">&searchType=videos|channels|playlists</span> &nbsp;|&nbsp; <span class="param">&sortBy=relevance|date|views|rating</span> &nbsp;|&nbsp; <span class="param">&duration=short|medium|long</span> &nbsp;|&nbsp; <span class="param">&uploadDate=</span> &nbsp;|&nbsp; <span class="param">&nextToken=</span></div>
+    <span class="method">GET</span><span class="path">/api/search</span><span class="engine">· Google Data API v3</span>
+    <div class="params">
+      <span class="p">?q=</span> keyword &nbsp;|&nbsp;
+      <span class="p">&type=video|channel|playlist</span> &nbsp;|&nbsp;
+      <span class="p">&order=relevance|date|viewCount|rating</span> &nbsp;|&nbsp;
+      <span class="p">&maxResults=12</span> &nbsp;|&nbsp;
+      <span class="p">&videoDuration=short|medium|long</span> &nbsp;|&nbsp;
+      <span class="p">&pageToken=</span>
+    </div>
+    <div class="eg">Example: /api/search?q=lofi+music&order=viewCount&maxResults=10</div>
   </div>
 
-  <h2>Playlist</h2>
+  <h2>Video</h2>
   <div class="ep">
-    <span class="method">GET</span><span class="path">/api/playlist</span>
-    <div class="params"><span class="param">?id=</span> playlist ID &nbsp;|&nbsp; <span class="param">&videos=true</span> to list videos &nbsp;|&nbsp; <span class="param">&nextToken=</span> &nbsp;|&nbsp; <span class="param">&lang=en-US</span></div>
+    <span class="method">GET</span><span class="path">/api/info</span><span class="engine">· Google Data API v3</span>
+    <div class="params"><span class="p">?url=</span> video ID or YouTube URL</div>
+    <div class="eg">Example: /api/info?url=dQw4w9WgXcQ</div>
+  </div>
+  <div class="ep">
+    <span class="method">GET</span><span class="path">/api/download</span><span class="engine">· Innertube (free)</span>
+    <div class="params">
+      <span class="p">?url=</span> video ID or URL &nbsp;|&nbsp;
+      <span class="p">&type=mp4|mp3</span> &nbsp;|&nbsp;
+      <span class="p">&quality=1080|720|480|360</span> (optional)
+    </div>
+    <div class="eg">Example: /api/download?url=dQw4w9WgXcQ&type=mp4&quality=720</div>
   </div>
 
   <h2>Channel</h2>
   <div class="ep">
-    <span class="method">GET</span><span class="path">/api/channel</span>
-    <div class="params"><span class="param">?id=</span> channel ID or @handle &nbsp;|&nbsp; <span class="param">&type=videos|shorts|live|playlists|releases|podcasts</span> &nbsp;|&nbsp; <span class="param">&sortBy=newest|popular</span> &nbsp;|&nbsp; <span class="param">&nextToken=</span></div>
+    <span class="method">GET</span><span class="path">/api/channel</span><span class="engine">· Google Data API v3</span>
+    <div class="params">
+      <span class="p">?id=</span> channel ID &nbsp;|&nbsp;
+      <span class="p">&videos=true</span> to include recent videos &nbsp;|&nbsp;
+      <span class="p">&maxResults=12</span> &nbsp;|&nbsp;
+      <span class="p">&pageToken=</span>
+    </div>
+    <div class="eg">Example: /api/channel?id=UCxxxxxxx&videos=true</div>
+  </div>
+
+  <h2>Playlist</h2>
+  <div class="ep">
+    <span class="method">GET</span><span class="path">/api/playlist</span><span class="engine">· Google Data API v3</span>
+    <div class="params">
+      <span class="p">?id=</span> playlist ID &nbsp;|&nbsp;
+      <span class="p">&maxResults=20</span> &nbsp;|&nbsp;
+      <span class="p">&pageToken=</span>
+    </div>
+    <div class="eg">Example: /api/playlist?id=PLxxxxxxx</div>
   </div>
 
   <h2>Health</h2>
